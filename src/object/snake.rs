@@ -29,11 +29,33 @@ impl Snake {
         self.body.push(SnakePoint::new(0, 0));
     }
 
-    pub fn update(&self) -> crossterm::Result<bool> {
+    pub fn update(&mut self) -> crossterm::Result<bool> {
         if self.losing_condition() {
             return Ok(BREAK);
         }
+
+        let mut body = self.body.iter_mut();
+        let head = body.next().unwrap();
+
+        let mut previous_part = head.get_point();
+
+        Self::move_in(self.direction, head, self.speed);
+        Self::draw(head, head.get_head_shape());
+
+        for body_part in body {
+            let p = body_part.get_point();
+            body_part.goto(previous_part);
+            previous_part = p;
+            Snake::draw(body_part, body_part.get_shape());
+        }
+
         Ok(CONTINUE)
+    }
+
+    pub fn draw(body_part: &SnakePoint, shape: char) {
+        let Point { x, y } = body_part.get_point();
+        execute!(io::stdout(), cursor::MoveTo(x, y)).unwrap();
+        print!("{shape}");
     }
 
     fn losing_condition(&self) -> bool {
@@ -92,12 +114,6 @@ impl Snake {
             Direction::Up => body_part.move_up(speed),
             Direction::Right => body_part.move_right(speed),
         }
-    }
-
-    pub fn draw(body_part: &SnakePoint, shape: char) {
-        let Point { x, y } = body_part.get_point();
-        execute!(io::stdout(), cursor::MoveTo(x, y)).unwrap();
-        print!("{shape}");
     }
 }
 

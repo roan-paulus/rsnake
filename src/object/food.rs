@@ -6,21 +6,19 @@ use crate::{Game, CONTINUE};
 use super::snake::Snake;
 
 pub struct Food {
-    x: u16,
-    y: u16,
+    pub x: u16,
+    pub y: u16,
 }
 
 impl Food {
-    pub fn update(&mut self, snake: &mut Snake, game: &mut Game) -> crossterm::Result<bool> {
+    pub fn eaten_by(&mut self, snake: &Snake) -> crossterm::Result<bool> {
         let head = snake.body.first().unwrap().get_point();
 
         if head.x == self.x && head.y == self.y {
-            game.points += 1;
-            self.respawn();
-            snake.grow();
+            return Ok(true);
         }
 
-        Ok(CONTINUE)
+        Ok(false)
     }
 
     pub fn draw(&self) {
