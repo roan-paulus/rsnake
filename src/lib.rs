@@ -6,10 +6,13 @@ use std::{
 use crossterm::cursor;
 use crossterm::event::Event;
 use crossterm::{event, execute, terminal};
+use grid::Point;
 
+use crate::animate::Animation;
 use crate::object::food::Food;
 use crate::object::snake::Snake;
 
+mod animate;
 mod grid;
 mod object;
 
@@ -48,6 +51,7 @@ struct Game {
     points: u16,
     snake: Snake,
     food: Food,
+    animation: Option<Animation>,
 }
 
 impl Game {
@@ -56,6 +60,7 @@ impl Game {
             points: 0,
             snake: Snake::new(5, 1),
             food: Food::new(),
+            animation: None,
         }
     }
 
@@ -65,7 +70,17 @@ impl Game {
             return Ok(BREAK);
         }
 
+        if let Some(animation) = self.animation.as_mut() {
+            const STOPPED: bool = false;
+            if animation.play() == STOPPED {
+                self.animation = None;
+            }
+        }
+
         if self.food.eaten_by(&self.snake)? {
+            let snake_location = self.snake.body.first().unwrap().get_point();
+
+            self.animation = Some(Animation::from(snake_location.x, snake_location.y));
             self.points += 1;
             self.food.respawn();
             self.snake.grow();
