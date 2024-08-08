@@ -1,7 +1,6 @@
 use crossterm::{cursor, execute};
+use rand::{self, Rng};
 use std::io;
-
-use crate::{Game, CONTINUE};
 
 use super::snake::Snake;
 
@@ -31,7 +30,12 @@ impl Food {
     }
 
     pub fn respawn(&mut self) {
-        self.x += 1;
-        self.y += 1
+        let (max_cols, max_rows) = match crossterm::terminal::size() {
+            Ok(size) => size,
+            Err(_) => panic!("Fuck!"),
+        };
+
+        self.x = rand::thread_rng().gen_range(0..=max_cols);
+        self.y = rand::thread_rng().gen_range(0..=max_rows);
     }
 }
