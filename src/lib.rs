@@ -19,7 +19,7 @@ mod object;
 const CONTINUE: bool = true;
 const BREAK: bool = false;
 
-pub fn run() -> crossterm::Result<()> {
+pub fn run() -> crossterm::Result<String> {
     let _clean_up_code = Term::init();
     let mut game = Game::new();
 
@@ -28,7 +28,7 @@ pub fn run() -> crossterm::Result<()> {
             match event::read() {
                 Ok(Event::Key(key_event)) => {
                     if game.snake.update_direction(key_event) == BREAK {
-                        return Ok(());
+                        return Ok(String::from("\nGamed stopped with [q]."));
                     };
                 }
                 Ok(_) => (),
@@ -39,7 +39,7 @@ pub fn run() -> crossterm::Result<()> {
         execute!(io::stdout(), terminal::Clear(terminal::ClearType::All))?;
 
         if !game.update()? {
-            return Ok(());
+            return Ok(format!("\nGame over.\nFinal score: {}", game.points));
         }
         game.draw();
 
@@ -91,7 +91,32 @@ impl Game {
 
     fn draw(&self) {
         self.food.draw();
+        self.draw_border();
         self.draw_points();
+    }
+
+    fn draw_border(&self) {
+        let size = crossterm::terminal::size().unwrap();
+
+        for x in 0..size.0 {
+            execute!(io::stdout(), cursor::MoveTo(x, 0)).unwrap();
+            print!("█");
+        }
+
+        for x in 0..size.0 {
+            execute!(io::stdout(), cursor::MoveTo(x, size.1)).unwrap();
+            print!("█");
+        }
+
+        for y in 0..size.1 {
+            execute!(io::stdout(), cursor::MoveTo(0, y)).unwrap();
+            print!("█");
+        }
+
+        for y in 0..size.1 {
+            execute!(io::stdout(), cursor::MoveTo(size.0, y)).unwrap();
+            print!("█");
+        }
     }
 
     fn draw_points(&self) {

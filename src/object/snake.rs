@@ -65,6 +65,11 @@ impl Snake {
             .expect("Always initializes with a head.")
             .get_point();
 
+        let (size_x, size_y) = crossterm::terminal::size().unwrap();
+        if head.x == 0 || head.x >= size_x || head.y == 0 || head.y >= size_y {
+            return true;
+        }
+
         for part in body {
             let Point { x, y } = part.get_point();
             if head.x == x && head.y == y {

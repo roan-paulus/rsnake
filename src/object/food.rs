@@ -35,7 +35,7 @@ impl Food {
             Err(_) => panic!("Fuck!"),
         };
 
-        self.x = rand::thread_rng().gen_range(0..=max_cols);
-        self.y = rand::thread_rng().gen_range(0..=max_rows);
+        self.x = rand::thread_rng().gen_range(1..max_cols);
+        self.y = rand::thread_rng().gen_range(1..max_rows);
     }
 }

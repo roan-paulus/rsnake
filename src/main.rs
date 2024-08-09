@@ -1,6 +1,6 @@
 fn main() -> crossterm::Result<()> {
     match snake::run() {
-        Ok(_) => println!("Exitting..."),
+        Ok(message) => println!("{message}"),
         Err(e) => eprintln!("{e}"),
     };
 
