@@ -3,25 +3,84 @@ use std::io;
 use crossterm::cursor;
 use crossterm::execute;
 
+use crate::helpers::qprint;
+use crate::helpers::qprintln;
+use crate::object::snake::Snake;
 use crate::Point;
 
 const SYMBOL_SIZE: usize = 8;
 
-pub struct Animation {
+pub type Playing = bool;
+
+trait _Animation {
+    fn play(&mut self) -> Playing;
+}
+
+pub enum Animations {
+    Chatbox(ChatboxAnimation),
+    Random(RandomAnimation),
+}
+
+pub struct ChatboxAnimation {
+    expiry_counter: u8,
+}
+
+impl ChatboxAnimation {
+    pub fn new(expiry_counter: u8) -> Self {
+        Self { expiry_counter }
+    }
+}
+
+impl ChatboxAnimation {
+    pub fn play(&mut self, snake: &Snake) -> Playing {
+        const BALLOON_STRING: char = '/';
+
+        if self.expiry_counter == 0 {
+            return false;
+        }
+
+        let snake_head = snake.body.first().unwrap().get_point();
+        let end = 3;
+
+        // Prevent overflow by not printing
+        if snake_head.y < end {
+            return true;
+        }
+
+        (1..end).for_each(|n| {
+            qprint(
+                BALLOON_STRING,
+                Point {
+                    x: snake_head.x + n,
+                    y: snake_head.y - n,
+                },
+            )
+        });
+        qprintln(
+            "Yum!",
+            Point {
+                x: snake_head.x + end,
+                y: snake_head.y - end,
+            },
+        );
+        self.expiry_counter -= 1;
+        true
+    }
+}
+
+pub struct RandomAnimation {
     point: Point,
     counter: usize,
     symbols: [char; SYMBOL_SIZE],
     state: State,
 }
 
-type Playing = bool;
-
 enum State {
     MovingOut,
     Downward,
 }
 
-impl Animation {
+impl RandomAnimation {
     pub fn from(x: u16, y: u16) -> Self {
         Self {
             point: Point { x, y },

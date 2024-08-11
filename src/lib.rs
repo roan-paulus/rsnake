@@ -3,17 +3,19 @@ use std::{
     time::Duration,
 };
 
+use animate::{Animations, ChatboxAnimation};
 use crossterm::cursor;
 use crossterm::event::Event;
 use crossterm::{event, execute, terminal};
 use grid::Point;
 
-use crate::animate::Animation;
+use crate::animate::RandomAnimation;
 use crate::object::food::Food;
 use crate::object::snake::Snake;
 
 mod animate;
 mod grid;
+mod helpers;
 mod object;
 
 const CONTINUE: bool = true;
@@ -51,7 +53,7 @@ struct Game {
     points: u16,
     snake: Snake,
     food: Food,
-    animation: Option<Animation>,
+    animations: Vec<Animations>,
 }
 
 impl Game {
@@ -60,7 +62,7 @@ impl Game {
             points: 0,
             snake: Snake::new(5, 1),
             food: Food::new(),
-            animation: None,
+            animations: Vec::new(),
         }
     }
 
@@ -70,17 +72,28 @@ impl Game {
             return Ok(BREAK);
         }
 
-        if let Some(animation) = self.animation.as_mut() {
-            const STOPPED: bool = false;
-            if animation.play() == STOPPED {
-                self.animation = None;
-            }
-        }
+        let mut animation_remove_queue: Vec<usize> = Vec::new();
+        self.animations
+            .iter_mut()
+            .enumerate()
+            .for_each(|(i, animation)| {
+                const STOPPED: bool = false;
+                let playing = match animation {
+                    Animations::Chatbox(animation) => animation.play(&self.snake),
+                    Animations::Random(animation) => animation.play(),
+                };
+                if playing == STOPPED {
+                    animation_remove_queue.push(i)
+                }
+            });
+
+        animation_remove_queue.iter().for_each(|i| {
+            self.animations.remove(*i);
+        });
 
         if self.food.eaten_by(&self.snake)? {
-            let snake_location = self.snake.body.first().unwrap().get_point();
-
-            self.animation = Some(Animation::from(snake_location.x, snake_location.y));
+            self.animations
+                .push(Animations::Chatbox(ChatboxAnimation::new(6)));
             self.points += 1;
             self.food.respawn();
             self.snake.grow();
