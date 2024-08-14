@@ -4,9 +4,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 use crossterm::execute;
 use crossterm::{cursor, event::KeyModifiers};
 
-use crate::animate::{ChatboxAnimation, Playing};
 use crate::grid::{Direction, Point};
-use crate::helpers::qprint;
 use crate::{BREAK, CONTINUE};
 
 use utils::SnakePoint;

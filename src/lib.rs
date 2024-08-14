@@ -1,6 +1,7 @@
 use std::{
-    io::{self, Write},
-    time::Duration,
+    io::{self, Read, Write},
+    thread::sleep,
+    time::{Duration, Instant},
 };
 
 use animate::{Animations, ChatboxAnimation};
@@ -9,7 +10,6 @@ use crossterm::event::Event;
 use crossterm::{event, execute, terminal};
 use grid::Point;
 
-use crate::animate::RandomAnimation;
 use crate::object::food::Food;
 use crate::object::snake::Snake;
 
@@ -26,7 +26,7 @@ pub fn run() -> crossterm::Result<String> {
     let mut game = Game::new();
 
     loop {
-        if event::poll(Duration::from_millis(200))? {
+        if event::poll(Duration::from_secs_f32(0.001))? {
             match event::read() {
                 Ok(Event::Key(key_event)) => {
                     if game.snake.update_direction(key_event) == BREAK {
@@ -46,6 +46,8 @@ pub fn run() -> crossterm::Result<String> {
         game.draw();
 
         io::stdout().flush().unwrap();
+
+        sleep(Duration::from_secs_f32(0.1));
     }
 }
 
