@@ -1,7 +1,7 @@
 use std::{
-    io::{self, Read, Write},
+    io::{self, Write},
     thread::sleep,
-    time::{Duration, Instant},
+    time::Duration,
 };
 
 use animate::{Animations, ChatboxAnimation};
@@ -10,6 +10,7 @@ use crossterm::event::Event;
 use crossterm::{event, execute, terminal};
 use grid::Point;
 
+use crate::object::enemy::Enemy;
 use crate::object::food::Food;
 use crate::object::snake::Snake;
 
@@ -55,6 +56,7 @@ struct Game {
     points: u16,
     snake: Snake,
     food: Food,
+    enemy: Enemy,
     animations: Vec<Animations>,
 }
 
@@ -65,6 +67,7 @@ impl Game {
             snake: Snake::new(5, 1),
             food: Food::new(),
             animations: Vec::new(),
+            enemy: Enemy::new(),
         }
     }
 
@@ -73,6 +76,9 @@ impl Game {
         if !self.snake.update()? {
             return Ok(BREAK);
         }
+        if !self.enemy.update()? {
+            return Ok(BREAK);
+        };
 
         let mut animation_remove_queue: Vec<usize> = Vec::new();
         self.animations
@@ -106,6 +112,7 @@ impl Game {
 
     fn draw(&self) {
         self.food.draw();
+        self.enemy.draw();
         self.draw_border();
         self.draw_points();
     }
