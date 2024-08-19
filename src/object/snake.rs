@@ -9,6 +9,9 @@ use crate::{BREAK, CONTINUE};
 
 use utils::SnakePoint;
 
+use super::bullet::Bullet;
+use super::food::Food;
+
 pub struct Snake {
     // Body starts with the head
     pub body: Vec<SnakePoint>,
@@ -56,6 +59,10 @@ impl Snake {
         let Point { x, y } = body_part.get_point();
         execute!(io::stdout(), cursor::MoveTo(x, y)).unwrap();
         print!("{shape}");
+    }
+
+    pub fn get_head(&self) -> &SnakePoint {
+        self.body.first().unwrap()
     }
 
     fn losing_condition(&self) -> bool {

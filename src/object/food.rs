@@ -10,7 +10,7 @@ pub struct Food {
 }
 
 impl Food {
-    pub fn eaten_by(&mut self, snake: &Snake) -> crossterm::Result<bool> {
+    pub fn eaten_by(&self, snake: &Snake) -> crossterm::Result<bool> {
         let head = snake.body.first().unwrap().get_point();
 
         if head.x == self.x && head.y == self.y {

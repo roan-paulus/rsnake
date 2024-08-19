@@ -27,14 +27,25 @@ impl Enemy {
         let (columns, _) = crossterm::terminal::size()?;
 
         if self.bullets_shot.is_empty() {
-            self.bullets_shot
-                .push(Bullet::new(self.location.x, self.location.y));
+            self.shoot();
         }
 
-        self.bullets_shot.iter_mut().for_each(|bullet| {
-            bullet.update();
-            bullet.draw();
+        let mut deletion_queue: Vec<usize> = Vec::new();
+        self.bullets_shot
+            .iter_mut()
+            .enumerate()
+            .for_each(|(i, bullet)| {
+                const OUT_OF_BOUNDS: bool = true;
+                if bullet.update().unwrap() == OUT_OF_BOUNDS {
+                    deletion_queue.push(i);
+                }
+                bullet.draw();
+            });
+
+        deletion_queue.iter().for_each(|i| {
+            self.bullets_shot.remove(*i);
         });
+        deletion_queue.clear();
 
         self.health = self.health.saturating_sub(0);
         if self.health == 0 {
@@ -45,6 +56,11 @@ impl Enemy {
             self.location.x += 1;
         }
         Ok(LIVING)
+    }
+
+    fn shoot(&mut self) {
+        self.bullets_shot
+            .push(Bullet::new(self.location.x, self.location.y));
     }
 
     pub fn draw(&self) {

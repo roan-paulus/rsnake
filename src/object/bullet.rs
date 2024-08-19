@@ -1,12 +1,19 @@
+use crossterm::{
+    execute,
+    style::{Color, ResetColor, SetForegroundColor},
+};
+
 use crate::{
     grid::{Direction, Point},
     helpers::qprint,
 };
 
 pub struct Bullet {
-    location: Point,
+    pub location: Point,
     direction: Direction,
 }
+
+type OutOfBounds = bool;
 
 impl Bullet {
     pub fn new(x: u16, y: u16) -> Self {
@@ -16,7 +23,7 @@ impl Bullet {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self) -> crossterm::Result<OutOfBounds> {
         use Direction as D;
         match self.direction {
             D::Up => self.location.y -= 1,
@@ -24,9 +31,21 @@ impl Bullet {
             D::Left => self.location.x -= 1,
             D::Right => self.location.x += 1,
         }
+
+        let (_, rows) = match crossterm::terminal::size() {
+            Ok((c, r)) => (c, r),
+            Err(_) => return Ok(true),
+        };
+
+        if self.location.y >= rows {
+            return Ok(true);
+        }
+        Ok(false)
     }
 
     pub fn draw(&self) {
-        qprint('█', self.location)
+        execute!(std::io::stdout(), SetForegroundColor(Color::DarkGreen)).unwrap();
+        qprint('█', self.location);
+        execute!(std::io::stdout(), ResetColor).unwrap();
     }
 }
