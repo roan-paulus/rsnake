@@ -6,7 +6,7 @@ use crossterm::execute;
 
 use crate::animate;
 use crate::grid::Point;
-use crate::object::enemy::Enemy;
+use crate::object::banner::Banner;
 use crate::object::food::Food;
 use crate::object::snake::Snake;
 
@@ -21,7 +21,7 @@ pub struct Game {
     pub points: u16,
     pub snake: Snake,
     pub food: Food,
-    pub enemy: Enemy,
+    pub enemy: Option<Banner>,
     pub animations: Vec<Animations>,
 }
 
@@ -32,7 +32,7 @@ impl Game {
             snake: Snake::new(5, 1),
             food: Food::new(),
             animations: Vec::new(),
-            enemy: Enemy::new(),
+            enemy: Some(Banner::new()),
         }
     }
 
@@ -41,9 +41,10 @@ impl Game {
         if !self.snake.update()? {
             return Ok(BREAK);
         }
-        if !self.enemy.update()? {
-            return Ok(BREAK);
-        };
+
+        if self.enemy.is_some() && !self.enemy.as_mut().unwrap().update()? {
+            self.enemy = None;
+        }
 
         let mut animation_remove_queue: Vec<usize> = Vec::new();
         self.animations
@@ -53,7 +54,6 @@ impl Game {
                 const STOPPED: bool = false;
                 let playing = match animation {
                     Animations::Chatbox(animation) => animation.play(&self.snake),
-                    Animations::Random(animation) => animation.play(),
                 };
                 if playing == STOPPED {
                     animation_remove_queue.push(i)
@@ -80,19 +80,14 @@ impl Game {
             self.snake.grow();
         }
 
-        let bullets = self.enemy.get_bullets();
-        for bullet in bullets.iter() {
-            if colliding(bullet.location, head) {
-                self.points += 1;
-            }
-        }
-
         Ok(CONTINUE)
     }
 
     pub fn draw(&self) {
         self.food.draw();
-        self.enemy.draw();
+        if self.enemy.is_some() {
+            self.enemy.as_ref().unwrap().draw();
+        }
         self.draw_border();
         self.draw_points();
     }

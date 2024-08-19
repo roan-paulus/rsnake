@@ -9,9 +9,6 @@ use crate::{BREAK, CONTINUE};
 
 use utils::SnakePoint;
 
-use super::bullet::Bullet;
-use super::food::Food;
-
 pub struct Snake {
     // Body starts with the head
     pub body: Vec<SnakePoint>,

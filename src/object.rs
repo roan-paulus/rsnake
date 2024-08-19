@@ -1,4 +1,3 @@
-pub mod bullet;
-pub mod enemy;
+pub mod banner;
 pub mod food;
 pub mod snake;
