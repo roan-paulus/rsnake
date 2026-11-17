@@ -5,9 +5,9 @@ To play a game of snake in the terminal.
 
 # How to
 
-- Move with h(left), j(down), k(up), l(right).
-- Be careful not to touch yourself (disgusting!).
-- Google Snake for the rest (come on...).
+- Move with h(left), j(down), k(up), l(right)
+- Eat the little rectangles that randomly spawn
+- Do not touch yourself!
 
 
 # Build and Play
